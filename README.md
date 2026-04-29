@@ -13,15 +13,16 @@ A professional, production-grade discovery platform built to help students navig
 
 ### 🏠 Discovery Dashboard
 Modern, branded interface featuring 30+ verified colleges with real-time search and filtering.
-![Home Page](file:///C:/Users/kaust/.gemini/antigravity/brain/77072975-5d23-4923-b256-224e2e969b4d/home_page_grid_1777472331219.png)
+![Home Page](./screenshots/home.png)
 
 ### 🧠 Intelligent College Predictor
 Data-driven tool that recommends institutions based on entrance exam ranks (e.g., JEE).
-![Predictor Tool](file:///C:/Users/kaust/.gemini/antigravity/brain/77072975-5d23-4923-b256-224e2e969b4d/predictor_tool_results_1777472396194.png)
+![Predictor Tool](./screenshots/predictor.png)
 
 ### 💬 Community Discussion Forum
 A dedicated space for students to ask questions, share experiences, and get peer advice.
-![Discussions](file:///C:/Users/kaust/.gemini/antigravity/brain/77072975-5d23-4923-b256-224e2e969b4d/community_discussions_1777472416127.png)
+![Discussions](./screenshots/community.png)
+
 
 ---
 
