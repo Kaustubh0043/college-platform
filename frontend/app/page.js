@@ -18,7 +18,8 @@ export default function Home() {
   const fetchColleges = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('http://localhost:5000/api/colleges', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const res = await axios.get(`${apiUrl}/colleges`, {
         params: { search, location, maxFee, page, limit: 6 }
       });
       setColleges(res.data.colleges || []);

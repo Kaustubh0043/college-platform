@@ -15,7 +15,8 @@ export default function DiscussionPage() {
 
   const fetchQuestions = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/discussions');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const res = await axios.get(`${apiUrl}/discussions`);
       setQuestions(res.data);
     } catch (err) {
       console.error('Error fetching questions:', err);
@@ -33,8 +34,9 @@ export default function DiscussionPage() {
     if (!user) return alert('Please login to post a question');
     
     try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/discussions', 
+      await axios.post(`${apiUrl}/discussions`, 
         { title, content },
         { headers: { Authorization: `Bearer ${token}` } }
       );

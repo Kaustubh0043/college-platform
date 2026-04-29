@@ -16,7 +16,8 @@ export default function CollegeDetail() {
   useEffect(() => {
     const fetchCollege = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/colleges/${id}`);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+        const res = await axios.get(`${apiUrl}/colleges/${id}`);
         setCollege(res.data);
       } catch (err) {
         console.error('Error fetching college:', err);
@@ -34,7 +35,8 @@ export default function CollegeDetail() {
     }
     setSaving(true);
     try {
-      await axios.post('http://localhost:5000/api/colleges/save', { collegeId: id });
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      await axios.post(`${apiUrl}/colleges/save`, { collegeId: id });
       alert('College saved to your profile!');
     } catch (err) {
       alert(err.response?.data?.message || 'Error saving college');

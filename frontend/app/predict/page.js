@@ -17,7 +17,8 @@ export default function PredictorPage() {
     setLoading(true);
     setSearched(true);
     try {
-      const res = await axios.get(`http://localhost:5000/api/colleges/predict?rank=${rank}`);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const res = await axios.get(`${apiUrl}/colleges/predict?rank=${rank}`);
       setResults(res.data);
     } catch (err) {
       console.error('Prediction error:', err);
