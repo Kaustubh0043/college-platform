@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { MapPin, IndianRupee, Star, CheckCircle2, User, Heart, Loader2, ArrowLeft } from 'lucide-react';
+import { MapPin, IndianRupee, Star, CheckCircle2, User, Heart, Loader2, ArrowLeft, Send, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -11,21 +11,29 @@ export default function CollegeDetail() {
   const [college, setCollege] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  
+  // Review posting state
+  const [ratingInput, setRatingInput] = useState(5);
+  const [commentInput, setCommentInput] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+
   const { user } = useAuth();
 
+  const fetchCollege = async (showLoadingIndicator = true) => {
+    if (showLoadingIndicator) setLoading(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const res = await axios.get(`${apiUrl}/colleges/${id}`);
+      setCollege(res.data);
+    } catch (err) {
+      console.error('Error fetching college:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchCollege = async () => {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-        const res = await axios.get(`${apiUrl}/colleges/${id}`);
-        setCollege(res.data);
-      } catch (err) {
-        console.error('Error fetching college:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCollege();
+    fetchCollege(true);
   }, [id]);
 
   const handleSave = async () => {
@@ -45,141 +53,273 @@ export default function CollegeDetail() {
     }
   };
 
+  const handlePostReview = async (e) => {
+    e.preventDefault();
+    if (!user) return alert('Please login to post a review');
+    if (!commentInput.trim()) return alert('Please enter a comment');
+
+    setSubmittingReview(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const token = localStorage.getItem('token');
+      await axios.post(`${apiUrl}/colleges/${id}/reviews`,
+        { rating: ratingInput, comment: commentInput },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setCommentInput('');
+      setRatingInput(5);
+      fetchCollege(false); // Silent reload to update list & rating in real time
+      alert('Review posted successfully!');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error posting review');
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
   if (loading) return (
-    <div className="flex justify-center items-center h-screen">
-      <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+    <div className="flex flex-col justify-center items-center h-screen gap-3 bg-slate-50/50">
+      <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+      <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest">Loading details...</p>
     </div>
   );
 
   if (!college) return (
-    <div className="container mx-auto px-4 py-12 text-center">
-      <h2 className="text-2xl font-bold text-gray-800">College not found</h2>
-      <Link href="/" className="text-blue-600 hover:underline mt-4 inline-block">Back to list</Link>
+    <div className="container mx-auto px-4 py-24 text-center max-w-md animate-fade-in">
+      <h2 className="text-2xl font-black text-slate-800 mb-2">College Not Found</h2>
+      <p className="text-slate-500 mb-6">We couldn't retrieve the information for this college ID.</p>
+      <Link href="/" className="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl text-xs hover:bg-blue-700 transition">
+        Back to Listings
+      </Link>
     </div>
   );
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Link href="/" className="flex items-center text-gray-600 hover:text-blue-600 mb-6 transition">
-        <ArrowLeft className="w-4 h-4 mr-2" />
+    <div className="container mx-auto px-4 py-12 max-w-6xl animate-slide-up">
+      <Link href="/" className="inline-flex items-center text-slate-400 hover:text-blue-600 mb-8 font-semibold transition group text-sm">
+        <ArrowLeft className="w-4 h-4 mr-1.5 group-hover:-translate-x-0.5 transition" />
         Back to Listings
       </Link>
 
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
-        <div className="md:flex">
-          <div className="md:w-1/2 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 flex items-center justify-center p-12 text-center h-full">
-              {/* Subtle Pattern Overlay */}
-              <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
-              
-              <h3 className="text-white text-4xl font-black tracking-tight leading-tight drop-shadow-xl uppercase">
+      {/* Main Banner Header card */}
+      <div className="bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden mb-12">
+        <div className="flex flex-col lg:flex-row">
+          <div className="lg:w-1/2 relative min-h-[300px] bg-slate-100">
+            <img
+              src={college.image_url || 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=80'}
+              alt={college.name}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-900/40 to-transparent"></div>
+            
+            <div className="absolute bottom-8 left-8 right-8">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-500 text-white mb-3 uppercase tracking-wider">
+                Elite Rank
+              </span>
+              <h2 className="text-white text-3xl sm:text-4xl font-black uppercase tracking-wide drop-shadow-lg leading-tight">
                 {college.name}
-              </h3>
+              </h2>
             </div>
           </div>
-          <div className="md:w-1/2 p-8">
-            <div className="flex justify-between items-start mb-4">
-              <h1 className="text-3xl font-extrabold text-gray-900">{college.name}</h1>
-              <button 
-                onClick={handleSave}
-                disabled={saving}
-                className="p-3 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition disabled:opacity-50"
-              >
-                <Heart className={`w-6 h-6 ${saving ? 'animate-pulse' : ''}`} />
-              </button>
-            </div>
-            
-            <div className="flex items-center text-gray-600 mb-4 text-lg">
-              <MapPin className="w-5 h-5 mr-2" />
-              {college.location}
-            </div>
 
-            <div className="flex items-center text-blue-600 font-bold text-2xl mb-6">
-              <IndianRupee className="w-6 h-6 mr-1" />
-              {college.fees.toLocaleString('en-IN')} <span className="text-sm font-normal text-gray-500 ml-1">/ year</span>
-            </div>
-
-            <div className="flex items-center mb-8">
-              <div className="flex items-center bg-yellow-100 px-3 py-1 rounded-lg">
-                <Star className="w-5 h-5 text-yellow-500 mr-1 fill-yellow-500" />
-                <span className="font-bold text-yellow-700">{college.rating}</span>
+          <div className="lg:w-1/2 p-8 sm:p-12 flex flex-col justify-between">
+            <div>
+              <div className="flex justify-between items-start mb-6">
+                <h1 className="text-2xl sm:text-3xl font-black text-slate-800 uppercase tracking-tight">{college.name}</h1>
+                <button 
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="p-3 bg-red-50 text-red-600 rounded-2xl hover:bg-red-100 hover:scale-105 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-sm shadow-red-100"
+                  title="Save College"
+                >
+                  <Heart className={`w-5 h-5 ${saving ? 'animate-pulse' : ''}`} />
+                </button>
               </div>
-              <span className="text-gray-400 mx-4">|</span>
-              <span className="text-gray-600">{college.reviews?.length || 0} Reviews</span>
+              
+              <div className="flex items-center text-slate-500 mb-4 font-semibold">
+                <MapPin className="w-5 h-5 mr-2 text-slate-400" />
+                {college.location}
+              </div>
+
+              <div className="flex items-center text-blue-600 font-black text-2xl mb-8">
+                <IndianRupee className="w-5 h-5 mr-0.5" />
+                {college.fees.toLocaleString('en-IN')} 
+                <span className="text-xs font-semibold text-slate-400 ml-1.5">/ academic year</span>
+              </div>
+
+              <div className="flex items-center gap-6 mb-8 py-4 border-y border-slate-50">
+                <div className="flex items-center bg-amber-50 text-amber-800 px-3.5 py-1.5 rounded-2xl font-black text-sm border border-amber-100">
+                  <Star className="w-4 h-4 text-amber-500 mr-1.5 fill-amber-500" />
+                  {Number(college.rating).toFixed(1)} / 5.0
+                </div>
+                <div className="text-sm font-bold text-slate-400">
+                  <span className="text-slate-700 font-extrabold">{college.reviews?.length || 0}</span> Student Reviews
+                </div>
+              </div>
             </div>
 
-            <p className="text-gray-700 leading-relaxed text-lg italic">
-              "{college.description || 'No description available for this institution.'}"
+            <p className="text-slate-600 leading-relaxed text-sm italic bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+              "{college.description || 'This institution provides world-class educational spaces, exceptional teaching standards, and comprehensive career development pipelines.'}"
             </p>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Courses Section */}
-        <div className="lg:col-span-2">
-          <div className="bg-white p-8 rounded-2xl shadow-md mb-8">
-            <h2 className="text-2xl font-bold mb-6 flex items-center">
-              <CheckCircle2 className="w-6 h-6 text-green-500 mr-2" />
-              Courses Offered
+        {/* Left Column: Courses & Reviews */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Courses Offered */}
+          <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+            <h2 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+              Programs & Degrees Offered
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               {(college.courses || []).map((course, idx) => (
-                <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full mr-3"></div>
-                  <span className="font-medium text-gray-800">{course}</span>
+                <div key={idx} className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 flex items-center hover:bg-slate-50 transition duration-150">
+                  <div className="w-2.5 h-2.5 bg-blue-500 rounded-full mr-3.5 shadow-sm shadow-blue-400"></div>
+                  <span className="font-extrabold text-slate-700 text-sm">{course}</span>
                 </div>
               ))}
+              {(college.courses || []).length === 0 && (
+                <p className="text-slate-400 text-sm italic">General Academic Curriculums</p>
+              )}
             </div>
           </div>
 
-          {/* Reviews Section */}
-          <div className="bg-white p-8 rounded-2xl shadow-md">
-            <h2 className="text-2xl font-bold mb-6">Student Reviews</h2>
+          {/* Student Reviews Section */}
+          <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+            <h2 className="text-xl font-black text-slate-800 mb-6">Student Feedback Forum</h2>
+            
             {college.reviews && college.reviews.length > 0 ? (
               <div className="space-y-6">
                 {college.reviews.map((review) => (
-                  <div key={review.id} className="border-b pb-6 last:border-0 last:pb-0">
-                    <div className="flex items-center justify-between mb-2">
+                  <div key={review.id} className="border-b border-slate-50 pb-6 last:border-0 last:pb-0">
+                    <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center">
-                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                          <User className="w-6 h-6 text-gray-500" />
+                        <div className="w-9 h-9 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center font-extrabold mr-3 text-sm">
+                          {review.user_name ? review.user_name[0].toUpperCase() : 'S'}
                         </div>
                         <div>
-                          <p className="font-bold text-gray-900">{review.user_name}</p>
-                          <div className="flex text-yellow-500">
-                            {[...Array(review.rating)].map((_, i) => (
-                              <Star key={i} className="w-3 h-3 fill-current" />
+                          <p className="font-bold text-slate-800 text-sm">{review.user_name || 'Anonymous User'}</p>
+                          <div className="flex text-amber-500 mt-0.5">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-3 h-3 ${
+                                  i < review.rating ? 'fill-amber-500 text-amber-500' : 'text-slate-200'
+                                }`}
+                              />
                             ))}
                           </div>
                         </div>
                       </div>
-                      <span className="text-sm text-gray-400">
-                        {new Date(review.created_at).toLocaleDateString()}
+                      <span className="text-xs font-semibold text-slate-400">
+                        {new Date(review.created_at).toLocaleDateString(undefined, {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
                       </span>
                     </div>
-                    <p className="text-gray-600 italic">"{review.comment}"</p>
+                    <p className="text-slate-600 italic text-sm pl-12">"{review.comment}"</p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-400 italic">No reviews yet. Be the first to review!</p>
+              <div className="text-center py-10 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                <p className="text-slate-400 text-sm font-semibold italic">No student reviews posted yet.</p>
+                <p className="text-slate-400 text-xs mt-1">Be the first to submit your academic experience below!</p>
+              </div>
             )}
           </div>
         </div>
 
-        {/* Sidebar Info */}
-        <div className="lg:col-span-1">
-          <div className="bg-blue-600 p-8 rounded-2xl shadow-md text-white sticky top-24">
-            <h3 className="text-xl font-bold mb-4">Admissions Open</h3>
-            <p className="mb-6 opacity-90">Get expert guidance for your admission process at {college.name}.</p>
-            <button className="w-full py-3 bg-white text-blue-600 rounded-xl font-bold hover:bg-gray-100 transition shadow-lg">
-              Apply Now
+        {/* Right Column: Admission CTA & Real-Time Review form */}
+        <div className="space-y-8">
+          {/* Real-Time Review Form */}
+          <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-md">
+            <h3 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-blue-500" />
+              Write a Review
+            </h3>
+
+            {user ? (
+              <form onSubmit={handlePostReview} className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Rating Score</label>
+                  <div className="flex gap-1.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setRatingInput(star)}
+                        className="focus:outline-none transition hover:scale-110 cursor-pointer"
+                      >
+                        <Star
+                          className={`w-6 h-6 ${
+                            star <= ratingInput
+                              ? 'fill-amber-500 text-amber-500'
+                              : 'text-slate-200 hover:text-amber-300'
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Your Experience</label>
+                  <textarea
+                    rows="4"
+                    placeholder="Share your campus, facility, or study experience..."
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:border-blue-500 focus:bg-white transition duration-200 outline-none text-slate-800 text-sm font-semibold shadow-sm resize-none"
+                    value={commentInput}
+                    onChange={(e) => setCommentInput(e.target.value)}
+                    required
+                  ></textarea>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={submittingReview}
+                  className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-1.5 shadow-md shadow-blue-100 cursor-pointer disabled:opacity-50"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  {submittingReview ? 'Submitting...' : 'Submit Review'}
+                </button>
+              </form>
+            ) : (
+              <div className="text-center p-6 bg-slate-50/50 rounded-2xl border border-slate-100">
+                <p className="text-slate-500 text-xs font-semibold mb-4 leading-relaxed">
+                  You must be registered and logged in to share a review for this institution.
+                </p>
+                <Link
+                  href="/login"
+                  className="inline-block px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-100 transition duration-200"
+                >
+                  Login to Profile
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Admission sticky Card */}
+          <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-xl text-white">
+            <h3 className="text-xl font-black mb-4">Admissions Guide</h3>
+            <p className="mb-6 text-slate-300 text-sm leading-relaxed">
+              Get personalized counselor guidelines for enrollment deadlines and cutoff structures at {college.name}.
+            </p>
+            <button className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold hover:shadow-lg transition-all duration-200 text-sm shadow-lg shadow-blue-600/10">
+              Inquire Now
             </button>
-            <p className="mt-4 text-xs text-center opacity-70">Official Partner Information</p>
+            <p className="mt-4 text-[10px] text-center text-slate-500 font-bold uppercase tracking-wider">
+              Official Admission Channel
+            </p>
           </div>
         </div>
       </div>
     </div>
   );
 }
+

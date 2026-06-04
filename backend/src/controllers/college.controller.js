@@ -139,3 +139,42 @@ exports.predictColleges = async (req, res) => {
   }
 };
 
+exports.addReview = async (req, res) => {
+  try {
+    const { rating, comment } = req.body;
+    const { id: collegeId } = req.params;
+    const userId = req.user.id;
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ message: 'Rating must be between 1 and 5' });
+    }
+
+    // Fetch user name
+    const userRes = await db.query('SELECT name FROM users WHERE id = $1', [userId]);
+    if (userRes.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const userName = userRes.rows[0].name;
+
+    // Insert review
+    const result = await db.query(
+      'INSERT INTO reviews (college_id, user_name, rating, comment) VALUES ($1, $2, $3, $4) RETURNING *',
+      [collegeId, userName, rating, comment]
+    );
+
+    // Recalculate average rating of the college
+    const ratingsRes = await db.query('SELECT rating FROM reviews WHERE college_id = $1', [collegeId]);
+    if (ratingsRes.rows.length > 0) {
+      const sum = ratingsRes.rows.reduce((acc, row) => acc + Number(row.rating), 0);
+      const avg = (sum / ratingsRes.rows.length).toFixed(1);
+      await db.query('UPDATE colleges SET rating = $1 WHERE id = $2', [avg, collegeId]);
+    }
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
+};
+
+

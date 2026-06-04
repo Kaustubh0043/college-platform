@@ -29,11 +29,12 @@ A dedicated space for students to ask questions, share experiences, and get peer
 ## 🚀 Key Features
 
 - **🏛️ Multi-Institution Discovery**: Detailed profiles for 30+ top-tier colleges including IITs, IIMs, and major private universities like MIT-WPU.
-- **📊 Comparison Engine**: Side-by-side analysis of fees, ratings, and locations for informed decision-making.
-- **🧠 Prediction Logic**: Rule-based predictor that matches student ranks with institutional cutoff trends.
+- **📊 Comparison Engine & Dock**: Side-by-side metrics table with persistent selections (`localStorage`) and a floating quick-access comparison drawer.
+- **✨ Real-Time Student Reviews**: Authenticated users can write reviews and submit 1-5 star ratings, automatically recalculating the college's average score.
+- **🧠 Prediction Logic**: Rule-based predictor matching student rank brackets with institutional cutoff trends.
 - **🔐 Secure Authentication**: JWT-based session management for profile persistence and "Saved Colleges" feature.
 - **💬 Q&A System**: Fully functional discussion threads with authenticated posting and answering.
-- **⚡ High Performance**: Built with Next.js App Router and optimized Tailwind v4 for sub-second page loads.
+- **⚡ High Performance & SWR**: Next.js turbopack rendering optimized with client-side **Stale-While-Revalidate** caching for 0ms load times.
 
 ---
 

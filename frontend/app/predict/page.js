@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import axios from 'axios';
-import { Search, GraduationCap, Trophy, MapPin, IndianRupee, Loader2 } from 'lucide-react';
+import { Search, GraduationCap, Trophy, MapPin, IndianRupee, Loader2, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function PredictorPage() {
@@ -28,30 +28,37 @@ export default function PredictorPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-5xl">
+    <div className="container mx-auto px-4 py-16 max-w-5xl animate-slide-up">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
-          College <span className="text-blue-600">Predictor Tool</span>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-600 border border-blue-500/25 mb-4 uppercase tracking-widest">
+          Rank Matching Engine
+        </span>
+        <h1 className="text-3xl sm:text-5xl font-black text-slate-800 mb-4 tracking-tight uppercase">
+          Admission <span className="text-blue-600">Predictor Tool</span>
         </h1>
-        <p className="text-gray-600 max-w-2xl mx-auto">
-          Enter your entrance exam rank (e.g., JEE) to discover which prestigious institutions you are eligible for based on previous cutoff trends.
+        <p className="text-slate-500 max-w-xl mx-auto leading-relaxed text-sm font-semibold">
+          Enter your national entrance exam rank (e.g. JEE Main/Advanced) to identify top-tier institutions within your expected cutoff brackets.
         </p>
       </div>
 
-      <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 mb-12 max-w-2xl mx-auto">
-        <form onSubmit={handlePredict} className="space-y-6">
+      <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl mb-16 max-w-xl mx-auto relative overflow-hidden">
+        {/* Subtle decorative accents */}
+        <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-bl-full"></div>
+        
+        <form onSubmit={handlePredict} className="space-y-6 relative z-10">
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">
-              Enter Your Rank
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5">
+              Enter Entrance Exam Rank
             </label>
             <div className="relative">
-              <Trophy className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500 w-6 h-6" />
+              <Trophy className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500 w-5 h-5" />
               <input
                 type="number"
-                placeholder="e.g. 5000"
-                className="w-full pl-14 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:border-blue-500 focus:bg-white transition-all outline-none text-lg font-semibold text-gray-800"
+                placeholder="e.g. 2500"
+                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:border-blue-500 focus:bg-white transition-all outline-none text-base font-bold text-slate-800 shadow-sm"
                 value={rank}
                 onChange={(e) => setRank(e.target.value)}
+                min="1"
                 required
               />
             </div>
@@ -59,44 +66,62 @@ export default function PredictorPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all flex items-center justify-center shadow-lg shadow-blue-100 disabled:opacity-50"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-bold text-sm shadow-md shadow-blue-100 hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
-            {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Predict My Colleges'}
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <>
+                Predict Matching Colleges
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </button>
         </form>
       </div>
 
       {searched && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-            <GraduationCap className="w-8 h-8 text-blue-600 mr-3" />
-            Recommended Colleges for Rank {rank}
+        <div className="space-y-8 animate-fade-in">
+          <h2 className="text-xl font-black text-slate-800 flex items-center gap-2 pb-4 border-b border-slate-100">
+            <GraduationCap className="w-6 h-6 text-blue-600" />
+            Recommended Colleges for Rank {Number(rank).toLocaleString()}
           </h2>
 
-          {results.length > 0 ? (
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+            </div>
+          ) : results.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {results.map((college) => (
-                <div key={college.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex items-start space-x-4">
-                  <img 
-                    src={college.image_url} 
-                    alt={college.name} 
-                    className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
-                  />
-                  <div className="flex-grow">
-                    <h3 className="font-bold text-gray-900 mb-1">{college.name}</h3>
-                    <div className="flex items-center text-gray-500 text-sm mb-2">
-                      <MapPin className="w-3 h-3 mr-1" />
+                <div key={college.id} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all flex items-start gap-4 group">
+                  <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-50 flex-shrink-0 border border-slate-100">
+                    <img 
+                      src={college.image_url || 'https://via.placeholder.com/150'} 
+                      alt={college.name} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                    />
+                  </div>
+                  
+                  <div className="flex-grow min-w-0">
+                    <h3 className="font-extrabold text-slate-800 text-sm line-clamp-1 uppercase leading-tight mb-1">{college.name}</h3>
+                    
+                    <div className="flex items-center text-slate-400 text-xs font-semibold mb-3">
+                      <MapPin className="w-3.5 h-3.5 mr-1" />
                       {college.location}
                     </div>
-                    <div className="flex items-center justify-between mt-4">
-                      <span className="text-blue-600 font-bold text-sm">
-                        ₹{Number(college.fees).toLocaleString('en-IN')} / yr
+                    
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-50">
+                      <span className="text-blue-600 font-extrabold text-xs">
+                        ₹{Number(college.fees).toLocaleString('en-IN')}
+                        <span className="text-[10px] text-slate-400 font-semibold ml-0.5">/ yr</span>
                       </span>
                       <Link 
                         href={`/college/${college.id}`}
-                        className="text-xs font-bold text-gray-400 hover:text-blue-600 transition"
+                        className="text-[10px] font-black text-slate-400 hover:text-blue-600 transition flex items-center gap-0.5 tracking-wider"
                       >
-                        VIEW DETAILS →
+                        VIEW DETAILS
+                        <ArrowRight className="w-3 h-3" />
                       </Link>
                     </div>
                   </div>
@@ -104,8 +129,9 @@ export default function PredictorPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-16 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-              <p className="text-gray-400 font-medium">No colleges found for this rank. Try a different range.</p>
+            <div className="text-center py-16 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200 max-w-md mx-auto shadow-sm">
+              <p className="text-slate-400 text-sm font-semibold italic">No eligible colleges found.</p>
+              <p className="text-slate-400 text-xs mt-1">Try entering a slightly different entrance rank range.</p>
             </div>
           )}
         </div>
@@ -113,3 +139,4 @@ export default function PredictorPage() {
     </div>
   );
 }
+
