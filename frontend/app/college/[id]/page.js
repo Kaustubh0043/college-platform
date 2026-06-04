@@ -105,11 +105,26 @@ export default function CollegeDetail() {
       <div className="bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden mb-12">
         <div className="flex flex-col lg:flex-row">
           <div className="lg:w-1/2 relative min-h-[300px] bg-slate-100">
-            <img
-              src={college.image_url || 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=80'}
-              alt={college.name}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
+            {(!college.image_url || college.image_url.includes('placehold.co')) ? (
+              <div className={`absolute inset-0 bg-gradient-to-br ${
+                [
+                  'from-blue-600 to-indigo-850',
+                  'from-violet-600 to-indigo-900',
+                  'from-emerald-600 to-teal-850',
+                  'from-rose-500 to-rose-800',
+                  'from-amber-500 to-orange-750',
+                  'from-purple-600 to-indigo-800',
+                ][Number(college.id) % 6]
+              } flex items-center justify-center`}>
+                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 4px 4px, white 1.5px, transparent 0)', backgroundSize: '24px 24px' }}></div>
+              </div>
+            ) : (
+              <img
+                src={college.image_url}
+                alt={college.name}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-900/40 to-transparent"></div>
             
             <div className="absolute bottom-8 left-8 right-8">

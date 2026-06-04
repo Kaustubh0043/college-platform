@@ -66,11 +66,26 @@ export default function SavedColleges() {
           {colleges.map((college) => (
             <div key={college.id} className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col h-full group">
               <div className="relative h-44 w-full overflow-hidden bg-slate-100">
-                <img
-                  src={college.image_url || 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=600&auto=format&fit=crop&q=80'}
-                  alt={college.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
-                />
+                {(!college.image_url || college.image_url.includes('placehold.co')) ? (
+                  <div className={`absolute inset-0 bg-gradient-to-br ${
+                    [
+                      'from-blue-600 to-indigo-850',
+                      'from-violet-600 to-indigo-900',
+                      'from-emerald-600 to-teal-850',
+                      'from-rose-500 to-rose-800',
+                      'from-amber-500 to-orange-750',
+                      'from-purple-600 to-indigo-800',
+                    ][Number(college.id) % 6]
+                  } flex items-center justify-center`}>
+                    <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }}></div>
+                  </div>
+                ) : (
+                  <img
+                    src={college.image_url}
+                    alt={college.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
+                  />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
                 
                 <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-xl flex items-center shadow-sm">

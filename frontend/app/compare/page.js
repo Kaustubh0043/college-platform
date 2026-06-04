@@ -86,12 +86,27 @@ export default function ComparePage() {
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
-                    <div className="h-28 w-full rounded-xl overflow-hidden mb-4 bg-slate-50">
-                      <img
-                        src={college.image_url || 'https://via.placeholder.com/400x200'}
-                        alt={college.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-all duration-300"
-                      />
+                    <div className="h-28 w-full rounded-xl overflow-hidden mb-4 bg-slate-50 relative">
+                      {(!college.image_url || college.image_url.includes('placehold.co')) ? (
+                        <div className={`absolute inset-0 bg-gradient-to-br ${
+                          [
+                            'from-blue-600 to-indigo-850',
+                            'from-violet-600 to-indigo-900',
+                            'from-emerald-600 to-teal-850',
+                            'from-rose-500 to-rose-800',
+                            'from-amber-500 to-orange-750',
+                            'from-purple-600 to-indigo-800',
+                          ][Number(college.id) % 6]
+                        } flex items-center justify-center`}>
+                          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }}></div>
+                        </div>
+                      ) : (
+                        <img
+                          src={college.image_url}
+                          alt={college.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-all duration-300"
+                        />
+                      )}
                     </div>
                     <h3 className="font-extrabold text-slate-800 text-sm line-clamp-2 leading-tight uppercase">
                       {college.name}
