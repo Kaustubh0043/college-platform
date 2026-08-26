@@ -9,5 +9,6 @@ router.get('/predict', collegeController.predictColleges);
 router.get('/:id', collegeController.getCollegeById);
 router.post('/save', authMiddleware, collegeController.saveCollege);
 router.post('/:id/reviews', authMiddleware, collegeController.addReview);
+router.post('/:id/inquire', collegeController.addInquiry);
 
 module.exports = router;

@@ -192,6 +192,53 @@ export default function ComparePage() {
                 <td key={`empty-course-${i}`} className="p-6 text-slate-300 text-xs italic">Empty slot</td>
               ))}
             </tr>
+            {/* Official Website row */}
+            <tr>
+              <td className="p-6 font-bold text-slate-500 text-xs uppercase tracking-wider bg-slate-50/30">Official Website</td>
+              {selectedColleges.map((college) => (
+                <td key={college.id} className="p-6">
+                  {college.official_website ? (
+                    <a
+                      href={college.official_website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                      Visit Site &rarr;
+                    </a>
+                  ) : (
+                    <span className="text-slate-400 text-xs italic">Not Available</span>
+                  )}
+                </td>
+              ))}
+              {Array.from({ length: Math.max(0, 3 - selectedColleges.length) }).map((_, i) => (
+                <td key={`empty-site-${i}`} className="p-6 text-slate-300 text-xs italic">Empty slot</td>
+              ))}
+            </tr>
+            {/* Brochure row */}
+            <tr>
+              <td className="p-6 font-bold text-slate-500 text-xs uppercase tracking-wider bg-slate-50/30">Prospectus Brochure</td>
+              {selectedColleges.map((college) => (
+                <td key={college.id} className="p-6">
+                  {college.brochure_url ? (
+                    <a
+                      href={college.brochure_url}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl transition shadow-sm"
+                    >
+                      Download PDF
+                    </a>
+                  ) : (
+                    <span className="text-slate-400 text-xs italic">Not Available</span>
+                  )}
+                </td>
+              ))}
+              {Array.from({ length: Math.max(0, 3 - selectedColleges.length) }).map((_, i) => (
+                <td key={`empty-brochure-${i}`} className="p-6 text-slate-300 text-xs italic">Empty slot</td>
+              ))}
+            </tr>
             {/* Action row */}
             <tr>
               <td className="p-6 font-bold text-slate-500 text-xs uppercase tracking-wider bg-slate-50/30">Listing Link</td>

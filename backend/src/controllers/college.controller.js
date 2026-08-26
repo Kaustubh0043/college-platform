@@ -177,4 +177,30 @@ exports.addReview = async (req, res) => {
   }
 };
 
+exports.addInquiry = async (req, res) => {
+  try {
+    const { id: collegeId } = req.params;
+    const { name, email, phone, query } = req.body;
+
+    if (!name || !email || !phone) {
+      return res.status(400).json({ message: 'Name, email, and phone are required' });
+    }
+
+    // Insert inquiry into the table
+    const result = await db.query(
+      'INSERT INTO inquiries (college_id, name, email, phone, query) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [collegeId, name, email, phone, query || '']
+    );
+
+    res.status(201).json({
+      message: 'Inquiry submitted successfully!',
+      inquiry: result.rows[0]
+    });
+  } catch (err) {
+    console.error('Error adding inquiry:', err);
+    res.status(500).send('Server error');
+  }
+};
+
+
 

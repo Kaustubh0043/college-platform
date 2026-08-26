@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { MapPin, IndianRupee, Star, CheckCircle2, User, Heart, Loader2, ArrowLeft, Send, Sparkles } from 'lucide-react';
+import { MapPin, IndianRupee, Star, CheckCircle2, User, Heart, Loader2, ArrowLeft, Send, Sparkles, Globe, FileText, Download, Eye, X } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -17,7 +17,15 @@ export default function CollegeDetail() {
   const [commentInput, setCommentInput] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
 
+  // Brochure and Inquiry states
+  const [showBrochureModal, setShowBrochureModal] = useState(false);
+  const [showInquiryModal, setShowInquiryModal] = useState(false);
+  const [inquiryForm, setInquiryForm] = useState({ name: '', email: '', phone: '', query: '' });
+  const [submittingInquiry, setSubmittingInquiry] = useState(false);
+  const [inquirySuccess, setInquirySuccess] = useState(false);
+
   const { user } = useAuth();
+
 
   const fetchCollege = async (showLoadingIndicator = true) => {
     if (showLoadingIndicator) setLoading(true);
@@ -76,6 +84,32 @@ export default function CollegeDetail() {
       setSubmittingReview(false);
     }
   };
+
+  const handleOpenInquiry = () => {
+    setInquiryForm({
+      name: user?.name || '',
+      email: user?.email || '',
+      phone: '',
+      query: ''
+    });
+    setInquirySuccess(false);
+    setShowInquiryModal(true);
+  };
+
+  const handleInquirySubmit = async (e) => {
+    e.preventDefault();
+    setSubmittingInquiry(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      await axios.post(`${apiUrl}/colleges/${id}/inquire`, inquiryForm);
+      setInquirySuccess(true);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error submitting inquiry');
+    } finally {
+      setSubmittingInquiry(false);
+    }
+  };
+
 
   if (loading) return (
     <div className="flex flex-col justify-center items-center h-screen gap-3 bg-slate-50/50">
@@ -325,16 +359,204 @@ export default function CollegeDetail() {
             <p className="mb-6 text-slate-300 text-sm leading-relaxed">
               Get personalized counselor guidelines for enrollment deadlines and cutoff structures at {college.name}.
             </p>
-            <button className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold hover:shadow-lg transition-all duration-200 text-sm shadow-lg shadow-blue-600/10">
+            <button 
+              onClick={handleOpenInquiry}
+              className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold hover:shadow-lg transition-all duration-200 text-sm shadow-lg shadow-blue-600/10 cursor-pointer"
+            >
               Inquire Now
             </button>
             <p className="mt-4 text-[10px] text-center text-slate-500 font-bold uppercase tracking-wider">
               Official Admission Channel
             </p>
           </div>
+
+          {/* Official Prospectus & Site Connections */}
+          <div className="bg-white border border-slate-100 p-8 rounded-3xl shadow-md space-y-6">
+            <div>
+              <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Institutional Assets</h3>
+              <p className="text-slate-500 text-xs font-semibold mt-1">Official materials published by the college administration.</p>
+            </div>
+            
+            <div className="space-y-3">
+              {college.official_website && (
+                <a 
+                  href={college.official_website} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-full py-3 px-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl font-bold transition flex items-center justify-center gap-2 text-xs text-slate-700 shadow-sm"
+                >
+                  <Globe className="w-4 h-4 text-slate-500" />
+                  Visit Official Website
+                </a>
+              )}
+              
+              {college.brochure_url && (
+                <>
+                  <button 
+                    onClick={() => setShowBrochureModal(true)}
+                    className="w-full py-3 px-4 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-2xl font-bold transition flex items-center justify-center gap-2 text-xs text-blue-700 shadow-sm cursor-pointer"
+                  >
+                    <Eye className="w-4 h-4 text-blue-500" />
+                    View Brochure Inline
+                  </button>
+                  
+                  <a 
+                    href={college.brochure_url} 
+                    download 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold transition flex items-center justify-center gap-2 text-xs shadow-md"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download Brochure PDF
+                  </a>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Brochure PDF Viewer Modal */}
+      {showBrochureModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-100 w-full max-w-5xl h-[85vh] flex flex-col animate-scale-up">
+            <div className="p-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Institutional Prospectus</h3>
+                <p className="text-xs text-slate-500 font-semibold">{college.name}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <a
+                  href={college.brochure_url}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Download PDF
+                </a>
+                <button
+                  onClick={() => setShowBrochureModal(false)}
+                  className="p-2 bg-slate-200 hover:bg-slate-350 text-slate-650 rounded-xl transition cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            <div className="flex-grow bg-slate-100 relative">
+              <iframe
+                src={college.brochure_url}
+                className="w-full h-full border-none"
+                title={`${college.name} Brochure`}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Admissions Inquiry Modal */}
+      {showInquiryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-100 w-full max-w-lg flex flex-col animate-scale-up">
+            <div className="p-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Admissions Inquiry</h3>
+                <p className="text-xs text-slate-500 font-semibold">Request information from {college.name}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowInquiryModal(false);
+                  setInquirySuccess(false);
+                }}
+                className="p-2 bg-slate-200 hover:bg-slate-350 text-slate-600 rounded-xl transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-6">
+              {inquirySuccess ? (
+                <div className="text-center py-8 space-y-4">
+                  <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
+                    <CheckCircle2 className="w-8 h-8" />
+                  </div>
+                  <h4 className="text-lg font-black text-slate-800">Inquiry Submitted!</h4>
+                  <p className="text-slate-500 text-sm leading-relaxed">
+                    Your inquiry has been successfully transmitted to the admissions channel. The prospectus/counselor guidelines will be sent to your registered email shortly.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setShowInquiryModal(false);
+                      setInquirySuccess(false);
+                    }}
+                    className="mt-4 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-md transition cursor-pointer"
+                  >
+                    Close Window
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleInquirySubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Full Name</label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:border-blue-500 focus:bg-white transition outline-none text-slate-800 text-sm font-semibold"
+                      placeholder="e.g. Rahul Sharma"
+                      value={inquiryForm.name}
+                      onChange={(e) => setInquiryForm({ ...inquiryForm, name: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Email Address</label>
+                      <input
+                        type="email"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:border-blue-500 focus:bg-white transition outline-none text-slate-800 text-sm font-semibold"
+                        placeholder="name@example.com"
+                        value={inquiryForm.email}
+                        onChange={(e) => setInquiryForm({ ...inquiryForm, email: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Phone Number</label>
+                      <input
+                        type="tel"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:border-blue-500 focus:bg-white transition outline-none text-slate-800 text-sm font-semibold"
+                        placeholder="+91 XXXXX XXXXX"
+                        value={inquiryForm.phone}
+                        onChange={(e) => setInquiryForm({ ...inquiryForm, phone: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Message / Question</label>
+                    <textarea
+                      rows="3"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:border-blue-500 focus:bg-white transition outline-none text-slate-800 text-sm font-semibold resize-none"
+                      placeholder="Ask about admissions, cutoffs, hostels, or courses..."
+                      value={inquiryForm.query}
+                      onChange={(e) => setInquiryForm({ ...inquiryForm, query: e.target.value })}
+                    ></textarea>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={submittingInquiry}
+                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs hover:shadow-lg transition flex items-center justify-center gap-1.5 shadow-md disabled:opacity-50 cursor-pointer animate-fade-in"
+                  >
+                    {submittingInquiry ? 'Sending Inquiry...' : 'Submit Inquiry'}
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 
